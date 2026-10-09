@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>An Integrated Python-Based Suite for Structural Analysis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] },
+          colors: {
+            engineering: {
+              50: '#f0f7ff', 100: '#e0effe', 200: '#b9dffd', 300: '#7cc5fc',
+              400: '#37a7f8', 500: '#0c8ee8', 600: '#0070c6', 700: '#0059a1',
+              800: '#034c85', 900: '#07406e', 950: '#052849',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --gradient-from: #0c8ee8;
+      --gradient-to: #0059a1;
+    }
+    .hero-gradient {
+      background: linear-gradient(135deg, #052849 0%, #0059a1 40%, #0c8ee8 100%);
+    }
+    .card-hover {
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+    .card-hover:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 40px rgba(12,142,232,0.25);
+    }
+    .dark .card-hover:hover {
+      box-shadow: 0 20px 40px rgba(12,142,232,0.4);
+    }
+    .module-icon {
+      font-size: 2.5rem;
+      line-height: 1;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in { animation: fadeIn 0.6s ease forwards; }
+    .fade-in-delay-1 { animation-delay: 0.1s; opacity: 0; }
+    .fade-in-delay-2 { animation-delay: 0.2s; opacity: 0; }
+    .fade-in-delay-3 { animation-delay: 0.3s; opacity: 0; }
+    .fade-in-delay-4 { animation-delay: 0.4s; opacity: 0; }
+    .fade-in-delay-5 { animation-delay: 0.5s; opacity: 0; }
+    .fade-in-delay-6 { animation-delay: 0.6s; opacity: 0; }
+  </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
+
+  <!-- ───────── Navbar ───────── -->
+  <nav class="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
+      <a href="index.html" class="flex items-center gap-2 font-bold text-engineering-700 dark:text-engineering-400 text-lg">
+        <svg class="w-7 h-7" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="14" width="28" height="4" rx="2" fill="currentColor" opacity="0.3"/>
+          <polygon points="8,14 16,4 24,14" fill="currentColor"/>
+          <rect x="6" y="18" width="4" height="10" fill="currentColor"/>
+          <rect x="22" y="18" width="4" height="10" fill="currentColor"/>
+        </svg>
+        StructuralSuite
+      </a>
+      <div class="hidden md:flex items-center gap-1 text-sm font-medium">
+        <a href="module1.html" class="px-3 py-1.5 rounded-lg hover:bg-engineering-50 dark:hover:bg-engineering-900/30 hover:text-engineering-700 dark:hover:text-engineering-400 transition-colors">Force System</a>
+        <a href="module2.html" class="px-3 py-1.5 rounded-lg hover:bg-engineering-50 dark:hover:bg-engineering-900/30 hover:text-engineering-700 dark:hover:text-engineering-400 transition-colors">Mohr's Circle</a>
+        <a href="module3.html" class="px-3 py-1.5 rounded-lg hover:bg-engineering-50 dark:hover:bg-engineering-900/30 hover:text-engineering-700 dark:hover:text-engineering-400 transition-colors">Beam Analysis</a>
+        <a href="module4.html" class="px-3 py-1.5 rounded-lg hover:bg-engineering-50 dark:hover:bg-engineering-900/30 hover:text-engineering-700 dark:hover:text-engineering-400 transition-colors">Torsion</a>
+        <a href="module5.html" class="px-3 py-1.5 rounded-lg hover:bg-engineering-50 dark:hover:bg-engineering-900/30 hover:text-engineering-700 dark:hover:text-engineering-400 transition-colors">Cross-Section</a>
+      </div>
+      <div class="flex items-center gap-3">
+        <button id="darkToggle" aria-label="Toggle dark mode"
+          class="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+          <svg id="sunIcon" class="w-5 h-5 hidden dark:block text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"/>
+          </svg>
+          <svg id="moonIcon" class="w-5 h-5 block dark:hidden text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+          </svg>
+        </button>
+        <!-- Mobile menu button -->
+        <button id="mobileMenuBtn" class="md:hidden p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <!-- Mobile menu -->
+    <div id="mobileMenu" class="md:hidden hidden border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 pb-4">
+      <div class="flex flex-col gap-1 pt-3 text-sm font-medium">
+        <a href="module1.html" class="px-3 py-2 rounded-lg hover:bg-engineering-50 dark:hover:bg-engineering-900/30">Force System Analyzer</a>
+        <a href="module2.html" class="px-3 py-2 rounded-lg hover:bg-engineering-50 dark:hover:bg-engineering-900/30">Mohr's Circle Analyzer</a>
+        <a href="module3.html" class="px-3 py-2 rounded-lg hover:bg-engineering-50 dark:hover:bg-engineering-900/30">Beam Analyzer</a>
+        <a href="module4.html" class="px-3 py-2 rounded-lg hover:bg-engineering-50 dark:hover:bg-engineering-900/30">Torsion Analyzer</a>
+        <a href="module5.html" class="px-3 py-2 rounded-lg hover:bg-engineering-50 dark:hover:bg-engineering-900/30">Cross-Section Analyzer</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ───────── Hero ───────── -->
+  <header class="hero-gradient text-white py-20 px-4">
+    <div class="max-w-5xl mx-auto text-center fade-in">
+      <div class="inline-flex items-center gap-2 bg-white/10 rounded-full px-4 py-1.5 text-sm font-medium mb-6 backdrop-blur-sm border border-white/20">
+        <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+        Major Project – 7th Semester, B.E. Civil Engineering
+      </div>
+      <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-6">
+        An Integrated<br/>
+        <span class="text-engineering-300">Python-Based Suite</span><br/>
+        for Structural Analysis
+      </h1>
+      <p class="text-xl text-engineering-200 mb-4 max-w-2xl mx-auto leading-relaxed">
+        Five interactive civil engineering analysis tools running entirely in your browser — no installation, no backend, 100% offline-capable.
+      </p>
+      <p class="text-engineering-300 text-sm mb-10 font-medium">
+        Built by Nagaraj Patil and Associates under the guidance of <strong class="text-white">Dr. M. M. Hanamasagar</strong>
+      </p>
+      <div class="flex flex-wrap gap-4 justify-center">
+        <a href="#modules" class="bg-white text-engineering-800 font-semibold px-8 py-3 rounded-xl hover:bg-engineering-50 transition-colors shadow-lg">
+          Explore Modules ↓
+        </a>
+        <a href="module3.html" class="bg-engineering-600 text-white font-semibold px-8 py-3 rounded-xl hover:bg-engineering-500 transition-colors border border-engineering-400 shadow-lg">
+          Try Beam Analyzer →
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ───────── Module Cards ───────── -->
+  <main id="modules" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+    <div class="text-center mb-14">
+      <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-3">Analysis Modules</h2>
+      <p class="text-slate-500 dark:text-slate-400 max-w-xl mx-auto">Select a module to launch the interactive analyzer. All calculations match the Python reference implementation.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+      <!-- Card 1 -->
+      <a href="module1.html" class="group card-hover bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 flex flex-col gap-4 fade-in fade-in-delay-1 no-underline">
+        <div class="w-14 h-14 rounded-xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-2xl">⚡</div>
+        <div>
+          <h3 class="text-lg font-bold text-slate-900 dark:text-white group-hover:text-engineering-600 dark:group-hover:text-engineering-400 transition-colors mb-1">Force System Analyzer</h3>
+          <p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">Analyze non-concurrent force systems. Compute ΣFx, ΣFy, resultant magnitude & angle, and moments about the origin with live vector plots.</p>
+        </div>
+        <div class="mt-auto flex flex-wrap gap-2">
+          <span class="text-xs bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 px-2.5 py-1 rounded-full font-medium">Up to 100 forces</span>
+          <span class="text-xs bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 px-2.5 py-1 rounded-full font-medium">Live plot</span>
+        </div>
+        <div class="flex items-center gap-1 text-engineering-600 dark:text-engineering-400 text-sm font-semibold group-hover:gap-2 transition-all">
+          Launch <span>→</span>
+        </div>
+      </a>
+
+      <!-- Card 2 -->
+      <a href="module2.html" class="group card-hover bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 flex flex-col gap-4 fade-in fade-in-delay-2 no-underline">
+        <div class="w-14 h-14 rounded-xl bg-purple-50 dark:bg-purple-900/30 flex items-center justify-center text-2xl">🔵</div>
+        <div>
+          <h3 class="text-lg font-bold text-slate-900 dark:text-white group-hover:text-engineering-600 dark:group-hover:text-engineering-400 transition-colors mb-1">Principal Stress Analyzer</h3>
+          <p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">Compute principal stresses, strains, and Mohr's Circle. Visualize the physical stress element and interactive circle plot side-by-side.</p>
+        </div>
+        <div class="mt-auto flex flex-wrap gap-2">
+          <span class="text-xs bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 px-2.5 py-1 rounded-full font-medium">Mohr's Circle</span>
+          <span class="text-xs bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 px-2.5 py-1 rounded-full font-medium">Stress element</span>
+        </div>
+        <div class="flex items-center gap-1 text-engineering-600 dark:text-engineering-400 text-sm font-semibold group-hover:gap-2 transition-all">
+          Launch <span>→</span>
+        </div>
+      </a>
+
+      <!-- Card 3 -->
+      <a href="module3.html" class="group card-hover bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 flex flex-col gap-4 fade-in fade-in-delay-3 no-underline">
+        <div class="w-14 h-14 rounded-xl bg-green-50 dark:bg-green-900/30 flex items-center justify-center text-2xl">🏗️</div>
+        <div>
+          <h3 class="text-lg font-bold text-slate-900 dark:text-white group-hover:text-engineering-600 dark:group-hover:text-engineering-400 transition-colors mb-1">Beam Analyzer</h3>
+          <p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">Full SFD, BMD, reactions and contraflexure for 4 support types. Handles point loads, UDL, and UVL with textbook accuracy.</p>
+        </div>
+        <div class="mt-auto flex flex-wrap gap-2">
+          <span class="text-xs bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 px-2.5 py-1 rounded-full font-medium">SFD + BMD</span>
+          <span class="text-xs bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 px-2.5 py-1 rounded-full font-medium">4 support types</span>
+          <span class="text-xs bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 px-2.5 py-1 rounded-full font-medium">Propped cantilever</span>
+        </div>
+        <div class="flex items-center gap-1 text-engineering-600 dark:text-engineering-400 text-sm font-semibold group-hover:gap-2 transition-all">
+          Launch <span>→</span>
+        </div>
+      </a>
+
+      <!-- Card 4 -->
+      <a href="module4.html" class="group card-hover bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 flex flex-col gap-4 fade-in fade-in-delay-4 no-underline">
+        <div class="w-14 h-14 rounded-xl bg-orange-50 dark:bg-orange-900/30 flex items-center justify-center text-2xl">🌀</div>
+        <div>
+          <h3 class="text-lg font-bold text-slate-900 dark:text-white group-hover:text-engineering-600 dark:group-hover:text-engineering-400 transition-colors mb-1">Torsion Analyzer</h3>
+          <p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">Analyze solid and hollow circular shafts. Compute J, τmax, angle of twist, and torsional stiffness with cross-section stress gradient plot.</p>
+        </div>
+        <div class="mt-auto flex flex-wrap gap-2">
+          <span class="text-xs bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 px-2.5 py-1 rounded-full font-medium">Solid & Hollow</span>
+          <span class="text-xs bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 px-2.5 py-1 rounded-full font-medium">6 materials</span>
+        </div>
+        <div class="flex items-center gap-1 text-engineering-600 dark:text-engineering-400 text-sm font-semibold group-hover:gap-2 transition-all">
+          Launch <span>→</span>
+        </div>
+      </a>
+
+      <!-- Card 5 -->
+      <a href="module5.html" class="group card-hover bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 flex flex-col gap-4 fade-in fade-in-delay-5 no-underline">
+        <div class="w-14 h-14 rounded-xl bg-red-50 dark:bg-red-900/30 flex items-center justify-center text-2xl">📐</div>
+        <div>
+          <h3 class="text-lg font-bold text-slate-900 dark:text-white group-hover:text-engineering-600 dark:group-hover:text-engineering-400 transition-colors mb-1">Cross-Section Analyzer</h3>
+          <p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">Bending and shear stress distribution across Rectangular, Circular, and I-Beam sections. Exact Q(y) formulas from the Python reference.</p>
+        </div>
+        <div class="mt-auto flex flex-wrap gap-2">
+          <span class="text-xs bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 px-2.5 py-1 rounded-full font-medium">3 sections</span>
+          <span class="text-xs bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 px-2.5 py-1 rounded-full font-medium">Bending + Shear</span>
+        </div>
+        <div class="flex items-center gap-1 text-engineering-600 dark:text-engineering-400 text-sm font-semibold group-hover:gap-2 transition-all">
+          Launch <span>→</span>
+        </div>
+      </a>
+
+      <!-- Info card -->
+      <div class="bg-gradient-to-br from-engineering-600 to-engineering-800 rounded-2xl p-6 flex flex-col gap-4 fade-in fade-in-delay-6 text-white">
+        <div class="w-14 h-14 rounded-xl bg-white/10 flex items-center justify-center text-2xl">✅</div>
+        <div>
+          <h3 class="text-lg font-bold mb-1">Verified & Tested</h3>
+          <p class="text-engineering-200 text-sm leading-relaxed">Every module's output is verified against the Python reference code. Unit tests included for all 5 modules with hand-calculated benchmarks.</p>
+        </div>
+        <div class="mt-auto space-y-1 text-sm text-engineering-200 font-mono">
+          <div>• No backend required</div>
+          <div>• Works offline</div>
+          <div>• Mobile responsive</div>
+          <div>• Light / Dark mode</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ───────── Footer ───────── -->
+  <footer class="bg-slate-900 dark:bg-slate-950 text-slate-400 py-12 px-4 border-t border-slate-800">
+    <div class="max-w-5xl mx-auto">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+        <div>
+          <h4 class="text-white font-bold mb-3 flex items-center gap-2">
+            <svg class="w-5 h-5 text-engineering-400" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="2" y="14" width="28" height="4" rx="2" fill="currentColor" opacity="0.3"/>
+              <polygon points="8,14 16,4 24,14" fill="currentColor"/>
+              <rect x="6" y="18" width="4" height="10" fill="currentColor"/>
+              <rect x="22" y="18" width="4" height="10" fill="currentColor"/>
+            </svg>
+            StructuralSuite
+          </h4>
+          <p class="text-sm leading-relaxed">An Integrated Python-Based Suite for Structural Element Analysis – Major Project, 7th Semester B.E. Civil Engineering</p>
+        </div>
+        <div>
+          <h4 class="text-white font-bold mb-3">Credits</h4>
+          <p class="text-sm leading-relaxed">Built by <strong class="text-white">Nagaraj Patil and Associates</strong><br/>
+          Under the guidance of<br/><strong class="text-white">Dr. M. M. Hanamasagar</strong></p>
+        </div>
+        <div>
+          <h4 class="text-white font-bold mb-3">Modules</h4>
+          <div class="grid grid-cols-1 gap-1 text-sm">
+            <a href="module1.html" class="hover:text-engineering-400 transition-colors">Force System Analyzer</a>
+            <a href="module2.html" class="hover:text-engineering-400 transition-colors">Principal Stress (Mohr's Circle)</a>
+            <a href="module3.html" class="hover:text-engineering-400 transition-colors">Beam Analyzer (SFD/BMD)</a>
+            <a href="module4.html" class="hover:text-engineering-400 transition-colors">Torsion Analyzer</a>
+            <a href="module5.html" class="hover:text-engineering-400 transition-colors">Cross-Section Analyzer</a>
+          </div>
+        </div>
+      </div>
+      <div class="border-t border-slate-800 pt-6 text-sm text-center text-slate-500">
+        © 2024 · Major Project – 7th Semester, B.E. Civil Engineering ·
+        Built by Nagaraj Patil and Associates under the guidance of Dr. M. M. Hanamasagar
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Dark mode toggle
+    const darkToggle = document.getElementById('darkToggle');
+    const html = document.documentElement;
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      html.classList.add('dark');
+    }
+    darkToggle.addEventListener('click', () => {
+      html.classList.toggle('dark');
+      localStorage.theme = html.classList.contains('dark') ? 'dark' : 'light';
+    });
+
+    // Mobile menu
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+    mobileMenuBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+  </script>
+</body>
+</html>

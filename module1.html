@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Force System Analyzer – StructuralSuite</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: { fontFamily: { sans: ['Inter','sans-serif'], mono: ['JetBrains Mono','monospace'] },
+        colors: { engineering: { 50:'#f0f7ff',100:'#e0effe',200:'#b9dffd',300:'#7cc5fc',400:'#37a7f8',500:'#0c8ee8',600:'#0070c6',700:'#0059a1',800:'#034c85',900:'#07406e',950:'#052849' } } } }
+    }
+  </script>
+  <style>
+    .result-card { @apply bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4; }
+    .input-group { @apply flex flex-col gap-1; }
+    .input-label { @apply text-xs font-medium text-slate-500 dark:text-slate-400; }
+    .input-field { @apply w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-engineering-500 transition; }
+    .force-row { @apply bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 p-4 mb-3; }
+  </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
+
+  <!-- Navbar -->
+  <nav class="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
+      <a href="index.html" class="flex items-center gap-2 font-bold text-engineering-700 dark:text-engineering-400 text-lg">
+        <svg class="w-7 h-7" viewBox="0 0 32 32" fill="none"><rect x="2" y="14" width="28" height="4" rx="2" fill="currentColor" opacity="0.3"/><polygon points="8,14 16,4 24,14" fill="currentColor"/><rect x="6" y="18" width="4" height="10" fill="currentColor"/><rect x="22" y="18" width="4" height="10" fill="currentColor"/></svg>
+        StructuralSuite
+      </a>
+      <div class="hidden md:flex items-center gap-1 text-sm font-medium">
+        <a href="module1.html" class="nav-link px-3 py-1.5 rounded-lg bg-engineering-50 dark:bg-engineering-900/30 text-engineering-700 dark:text-engineering-400 font-semibold">Force System</a>
+        <a href="module2.html" class="nav-link px-3 py-1.5 rounded-lg hover:bg-engineering-50 dark:hover:bg-engineering-900/30 hover:text-engineering-700 dark:hover:text-engineering-400 transition-colors">Mohr's Circle</a>
+        <a href="module3.html" class="nav-link px-3 py-1.5 rounded-lg hover:bg-engineering-50 dark:hover:bg-engineering-900/30 hover:text-engineering-700 dark:hover:text-engineering-400 transition-colors">Beam Analysis</a>
+        <a href="module4.html" class="nav-link px-3 py-1.5 rounded-lg hover:bg-engineering-50 dark:hover:bg-engineering-900/30 hover:text-engineering-700 dark:hover:text-engineering-400 transition-colors">Torsion</a>
+        <a href="module5.html" class="nav-link px-3 py-1.5 rounded-lg hover:bg-engineering-50 dark:hover:bg-engineering-900/30 hover:text-engineering-700 dark:hover:text-engineering-400 transition-colors">Cross-Section</a>
+      </div>
+      <button id="darkToggle" class="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+        <svg class="w-5 h-5 hidden dark:block text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"/></svg>
+        <svg class="w-5 h-5 block dark:hidden text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Header -->
+  <div class="bg-gradient-to-r from-engineering-800 to-engineering-600 text-white py-8 px-4">
+    <div class="max-w-7xl mx-auto">
+      <div class="flex items-center gap-3 mb-2">
+        <span class="text-3xl">⚡</span>
+        <div>
+          <p class="text-engineering-300 text-sm font-medium">Module 1</p>
+          <h1 class="text-2xl md:text-3xl font-bold">Force System Analyzer</h1>
+        </div>
+      </div>
+      <p class="text-engineering-200 text-sm max-w-2xl">Force analysis. Compute resultant force, direction, and moment about origin with live vector diagrams.</p>
+    </div>
+  </div>
+
+  <!-- Main Layout -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div class="grid grid-cols-1 xl:grid-cols-5 gap-6">
+
+      <!-- ─── LEFT: Inputs ─── -->
+      <div class="xl:col-span-2 space-y-4">
+
+        <!-- Number of forces -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-5">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="font-bold text-slate-900 dark:text-white">Configuration</h2>
+            <div class="flex gap-2">
+              <button id="btnReset" class="text-xs bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 px-3 py-1.5 rounded-lg font-medium transition-colors">Reset</button>
+              <button id="btnDownload" class="text-xs bg-engineering-600 hover:bg-engineering-700 text-white px-3 py-1.5 rounded-lg font-medium transition-colors">Download</button>
+            </div>
+          </div>
+          <div class="input-group">
+            <label class="input-label" for="numForces">Number of Forces (1 – 100)</label>
+            <input type="number" id="numForces" min="1" max="100" value="3" class="input-field w-32" />
+          </div>
+        </div>
+
+        <!-- Force rows container -->
+        <div id="forceRows" class="space-y-3"></div>
+
+        <!-- Error display -->
+        <div id="errorBox"></div>
+
+        <!-- Theory collapsible -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+          <button data-collapse-btn="theoryPanel" class="w-full flex items-center justify-between px-5 py-4 text-left font-semibold text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+            <span>📚 Theory & Formulas</span>
+            <svg class="chevron w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <div id="theoryPanel" class="hidden px-5 pb-5 space-y-3 text-sm text-slate-600 dark:text-slate-300">
+            <div class="bg-slate-50 dark:bg-slate-800 rounded-lg p-3 font-mono text-xs space-y-1">
+              <div id="eq1"></div>
+              <div id="eq2"></div>
+              <div id="eq3"></div>
+              <div id="eq4"></div>
+              <div id="eq5"></div>
+              <div id="eq6"></div>
+            </div>
+            <p class="text-xs text-slate-500">Sign convention: moment M = x·Fy − y·Fx (counterclockwise positive). Angle measured counterclockwise from +x axis (0°–360°).</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── RIGHT: Results & Plot ─── -->
+      <div class="xl:col-span-3 space-y-4">
+
+        <!-- Summary results -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-5">
+          <h2 class="font-bold text-slate-900 dark:text-white mb-4">Analysis Results</h2>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="summaryCards">
+            <div class="result-card text-center">
+              <p class="text-xs text-slate-500 dark:text-slate-400 mb-1">ΣFx</p>
+              <p id="res_sumFx" class="text-lg font-bold font-mono text-engineering-700 dark:text-engineering-400">—</p>
+              <p class="text-xs text-slate-400">N</p>
+            </div>
+            <div class="result-card text-center">
+              <p class="text-xs text-slate-500 dark:text-slate-400 mb-1">ΣFy</p>
+              <p id="res_sumFy" class="text-lg font-bold font-mono text-engineering-700 dark:text-engineering-400">—</p>
+              <p class="text-xs text-slate-400">N</p>
+            </div>
+            <div class="result-card text-center">
+              <p class="text-xs text-slate-500 dark:text-slate-400 mb-1">Resultant |R|</p>
+              <p id="res_mag" class="text-lg font-bold font-mono text-green-700 dark:text-green-400">—</p>
+              <p class="text-xs text-slate-400">N</p>
+            </div>
+            <div class="result-card text-center">
+              <p class="text-xs text-slate-500 dark:text-slate-400 mb-1">Angle θR</p>
+              <p id="res_angle" class="text-lg font-bold font-mono text-green-700 dark:text-green-400">—</p>
+              <p class="text-xs text-slate-400">deg</p>
+            </div>
+          </div>
+          <div class="mt-3 result-card">
+            <p class="text-xs text-slate-500 dark:text-slate-400 mb-1">Resultant Moment about Origin (0,0)</p>
+            <p id="res_moment" class="text-xl font-bold font-mono text-purple-700 dark:text-purple-400">— N·m</p>
+          </div>
+        </div>
+
+        <!-- Plot -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-5">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="font-bold text-slate-900 dark:text-white">Force Vector Diagram</h2>
+          </div>
+          <div id="forcePlot" class="w-full" style="height: 420px;"></div>
+        </div>
+
+        <!-- Step-by-step panel -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+          <button data-collapse-btn="stepsPanel" class="w-full flex items-center justify-between px-5 py-4 text-left font-semibold text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+            <span>🔢 Step-by-Step Calculations</span>
+            <svg class="chevron w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <div id="stepsPanel" class="hidden">
+            <div id="stepsContent" class="px-5 pb-5 space-y-3 text-sm font-mono"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-slate-900 text-slate-400 py-8 px-4 border-t border-slate-800 mt-8">
+    <div class="max-w-5xl mx-auto text-sm text-center space-y-1">
+      <p class="text-white font-semibold">An Integrated Python-Based Suite for Structural Analysis</p>
+      <p>Built by <strong class="text-white">Nagaraj Patil and Associates</strong> under the guidance of <strong class="text-white">Dr. M. M. Hanamasagar</strong></p>
+      <p class="text-slate-500">Major Project – 7th Semester, B.E. Civil Engineering · © 2024</p>
+    </div>
+  </footer>
+
+  <script type="module">
+    // ── Imports ──────────────────────────────────────────────────────────────
+    import { analyzeForces, computeQuiverScale, computePlotLimit } from './src/lib/forceAnalyzer.js';
+
+    // ── Dark mode ─────────────────────────────────────────────────────────────
+    const html = document.documentElement;
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && matchMedia('(prefers-color-scheme: dark)').matches)) html.classList.add('dark');
+    document.getElementById('darkToggle').addEventListener('click', () => {
+      html.classList.toggle('dark');
+      localStorage.theme = html.classList.contains('dark') ? 'dark' : 'light';
+      updatePlot();
+    });
+
+    // ── Collapsible ───────────────────────────────────────────────────────────
+    document.querySelectorAll('[data-collapse-btn]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const panel = document.getElementById(btn.dataset.collapseBtn);
+        panel.classList.toggle('hidden');
+        btn.querySelector('.chevron').style.transform = panel.classList.contains('hidden') ? '' : 'rotate(180deg)';
+      });
+    });
+
+    // ── KaTeX formulas ────────────────────────────────────────────────────────
+    const eqs = [
+      ['eq1', 'F_x = F \\cdot \\cos\\theta'],
+      ['eq2', 'F_y = F \\cdot \\sin\\theta'],
+      ['eq3', '\\Sigma F_x = \\sum_{i=1}^{n} F_{xi}'],
+      ['eq4', '\\Sigma F_y = \\sum_{i=1}^{n} F_{yi}'],
+      ['eq5', 'R = \\sqrt{(\\Sigma F_x)^2 + (\\Sigma F_y)^2}'],
+      ['eq6', 'M_O = \\sum_{i=1}^{n}(x_i F_{yi} - y_i F_{xi})'],
+    ];
+    eqs.forEach(([id, latex]) => {
+      const el = document.getElementById(id);
+      if (el) katex.render(latex, el, { throwOnError: false, displayMode: false });
+    });
+
+    // ── State ─────────────────────────────────────────────────────────────────
+    let forces = [];
+    const DEFAULT_FORCES = [
+      { mag: 100, angle: 30, x: 2, y: 1 },
+      { mag: 150, angle: 120, x: -1, y: 3 },
+      { mag: 80, angle: 240, x: 1, y: -2 },
+    ];
+
+    // ── Build force rows ──────────────────────────────────────────────────────
+    function buildForceRows(n) {
+      const container = document.getElementById('forceRows');
+        container.innerHTML = '';
+      forces = [];
+      for (let i = 0; i < n; i++) {
+        const def = DEFAULT_FORCES[i] || { mag: 50, angle: (i * 45) % 360, x: 0, y: 0 };
+        forces.push({ ...def });
+        container.insertAdjacentHTML('beforeend', `
+          <div class="force-row" id="forceRow_${i}">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-sm font-bold text-engineering-700 dark:text-engineering-400 bg-engineering-50 dark:bg-engineering-900/30 px-2.5 py-1 rounded-full">F${i + 1}</span>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div class="input-group">
+                <label class="input-label">Magnitude (N)</label>
+                <input type="number" id="mag_${i}" value="${def.mag}" min="-1000" max="1000" step="1" class="input-field" />
+              </div>
+              <div class="input-group">
+                <label class="input-label">Angle (°)</label>
+                <input type="number" id="ang_${i}" value="${def.angle}" min="0" max="360" step="1" class="input-field" />
+              </div>
+              <div class="input-group">
+                <label class="input-label">X-position (m)</label>
+                <input type="number" id="x_${i}" value="${def.x}" min="-10" max="10" step="0.1" class="input-field" />
+              </div>
+              <div class="input-group">
+                <label class="input-label">Y-position (m)</label>
+                <input type="number" id="y_${i}" value="${def.y}" min="-10" max="10" step="0.1" class="input-field" />
+              </div>
+            </div>
+          </div>`);
+
+        // Listen for input changes on each field
+        const fieldMap = { mag: 'mag', ang: 'angle', x: 'x', y: 'y' };
+        ['mag', 'ang', 'x', 'y'].forEach(field => {
+          document.getElementById(`${field}_${i}`).addEventListener('input', e => {
+            const val = parseFloat(e.target.value);
+            if (!isNaN(val)) {
+              forces[i][fieldMap[field]] = val;
+              debouncedUpdate();
+            }
+          });
+        });
+      }
+      updatePlot();
+    }
+
+    // ── Debounce ──────────────────────────────────────────────────────────────
+    let debTimer;
+    function debouncedUpdate() { clearTimeout(debTimer); debTimer = setTimeout(updatePlot, 150); }
+
+    // ── num forces input ──────────────────────────────────────────────────────
+    const numInput = document.getElementById('numForces');
+    numInput.addEventListener('input', e => {
+      const n = Math.min(100, Math.max(1, parseInt(e.target.value) || 1));
+      buildForceRows(n);
+    });
+
+    // ── Main update function ──────────────────────────────────────────────────
+    function updatePlot() {
+      const result = analyzeForces(forces);
+      const limit = computePlotLimit(result);
+      const scale = computeQuiverScale(
+        Math.max(...result.details.map(d => Math.sqrt(d.fx ** 2 + d.fy ** 2)), 0),
+        limit
+      );
+
+      // Update result cards
+      const f = (n, d = 2) => (Math.abs(n) < 1e-9 ? '0' : parseFloat(n.toFixed(d)).toString());
+      document.getElementById('res_sumFx').textContent = f(result.sumFx, 2);
+      document.getElementById('res_sumFy').textContent = f(result.sumFy, 2);
+      document.getElementById('res_mag').textContent = f(result.resMag, 2);
+      document.getElementById('res_angle').textContent = f(result.resAngle, 1) + '°';
+      document.getElementById('res_moment').textContent = f(result.sumM, 2) + ' N·m';
+
+      // Build Plotly traces
+      const isDark = html.classList.contains('dark');
+      const plotBg = isDark ? '#0f172a' : '#ffffff';
+      const gridColor = isDark ? '#334155' : '#e2e8f0';
+      const textColor = isDark ? '#94a3b8' : '#475569';
+
+      const traceArrows = [];
+      const blues = ['#3b82f6', '#60a5fa', '#2563eb', '#93c5fd', '#1d4ed8'];
+
+      for (const d of result.details) {
+        const dx = d.fx / scale, dy = d.fy / scale;
+        const tx = d.x + dx * 0.5, ty = d.y + dy * 0.5;
+        // arrow shaft
+        traceArrows.push({
+          type: 'scatter', mode: 'lines',
+          x: [d.x, d.x + dx], y: [d.y, d.y + dy],
+          line: { color: blues[(d.index - 1) % blues.length], width: 2 },
+          opacity: 0.7, showlegend: false, hoverinfo: 'skip',
+        });
+        // annotation for the label
+        traceArrows.push({
+          type: 'scatter', mode: 'text',
+          x: [tx], y: [ty],
+          text: [`<b>F${d.index}</b>`],
+          textfont: { color: blues[(d.index - 1) % blues.length], size: 12 },
+          showlegend: false, hoverinfo: 'text',
+          hovertext: [`F${d.index}: ${f(d.mag)}N @ ${f(d.angle, 1)}° at (${f(d.x, 1)}, ${f(d.y, 1)})m`],
+        });
+      }
+
+      // Resultant
+      const rdx = result.sumFx / scale, rdy = result.sumFy / scale;
+      traceArrows.push({
+        type: 'scatter', mode: 'lines',
+        x: [0, rdx], y: [0, rdy],
+        line: { color: '#ef4444', width: 3 },
+        name: `Resultant: ${f(result.resMag, 1)}N @ ${f(result.resAngle, 1)}°`,
+      });
+      traceArrows.push({
+        type: 'scatter', mode: 'text',
+        x: [rdx * 0.5], y: [rdy * 0.5],
+        text: ['<b>R</b>'],
+        textfont: { color: '#ef4444', size: 13 },
+        showlegend: false, hoverinfo: 'skip',
+      });
+
+      // Arrow heads as annotation markers
+      const annotations = result.details.map(d => ({
+        x: d.x + d.fx / scale, y: d.y + d.fy / scale, xref: 'x', yref: 'y',
+        ax: d.x, ay: d.y, axref: 'x', ayref: 'y',
+        showarrow: true, arrowhead: 3, arrowsize: 1.5,
+        arrowcolor: blues[(d.index - 1) % blues.length],
+        arrowwidth: 2, opacity: 0.8,
+      }));
+      annotations.push({
+        x: rdx, y: rdy, xref: 'x', yref: 'y',
+        ax: 0, ay: 0, axref: 'x', ayref: 'y',
+        showarrow: true, arrowhead: 3, arrowsize: 2,
+        arrowcolor: '#ef4444', arrowwidth: 2.5,
+      });
+
+      Plotly.react('forcePlot', traceArrows, {
+        paper_bgcolor: plotBg, plot_bgcolor: plotBg,
+        font: { family: 'Inter, sans-serif', color: textColor, size: 12 },
+        xaxis: { range: [-limit, limit], gridcolor: gridColor, zerolinecolor: textColor, title: 'X (m)', zeroline: true },
+        yaxis: { range: [-limit, limit], gridcolor: gridColor, zerolinecolor: textColor, title: 'Y (m)', scaleanchor: 'x', scaleratio: 1, zeroline: true },
+        legend: { bgcolor: isDark ? '#1e293b' : '#f8fafc', bordercolor: isDark ? '#334155' : '#e2e8f0', borderwidth: 1 },
+        margin: { t: 20, b: 50, l: 60, r: 20 },
+        annotations,
+        hovermode: 'closest',
+      }, { responsive: true });
+
+      // Step-by-step calculations
+      let html_steps = '';
+      let runningM = 0;
+      for (const d of result.details) {
+        runningM += d.momentContrib;
+        html_steps += `
+          <div class="bg-slate-50 dark:bg-slate-800 rounded-lg p-3 text-xs space-y-0.5">
+            <p class="text-engineering-700 dark:text-engineering-400 font-bold">F${d.index}: mag=${f(d.mag)}N, θ=${f(d.angle, 1)}°, pos=(${f(d.x, 1)}, ${f(d.y, 1)})m</p>
+            <p>F<sub>x</sub> = ${f(d.mag)}·cos(${f(d.angle, 1)}°) = <strong>${f(d.fx, 3)}</strong> N</p>
+            <p>F<sub>y</sub> = ${f(d.mag)}·sin(${f(d.angle, 1)}°) = <strong>${f(d.fy, 3)}</strong> N</p>
+            <p>M = (${f(d.x, 1)} × ${f(d.fy, 3)}) − (${f(d.y, 1)} × ${f(d.fx, 3)}) = <strong>${f(d.momentContrib, 3)}</strong> N·m</p>
+            <p class="text-slate-500">Running total M = <strong class="text-purple-600 dark:text-purple-400">${f(runningM, 3)}</strong> N·m</p>
+          </div>`;
+      }
+      html_steps += `
+        <div class="bg-engineering-50 dark:bg-engineering-900/30 rounded-lg p-3 text-xs border border-engineering-200 dark:border-engineering-700">
+          <p class="font-bold text-engineering-800 dark:text-engineering-300">Summary</p>
+          <p>ΣFx = <strong>${f(result.sumFx, 3)}</strong> N &nbsp;|&nbsp; ΣFy = <strong>${f(result.sumFy, 3)}</strong> N</p>
+          <p>|R| = <strong>${f(result.resMag, 3)}</strong> N &nbsp;|&nbsp; θR = <strong>${f(result.resAngle, 2)}°</strong></p>
+          <p>ΣM = <strong>${f(result.sumM, 3)}</strong> N·m</p>
+        </div>`;
+      document.getElementById('stepsContent').innerHTML = html_steps;
+    }
+
+    // ── Reset ─────────────────────────────────────────────────────────────────
+    document.getElementById('btnReset').addEventListener('click', () => {
+      numInput.value = 3;
+      numSlider.value = 3;
+      buildForceRows(3);
+    });
+
+    // ── Download results ──────────────────────────────────────────────────────
+    document.getElementById('btnDownload').addEventListener('click', () => {
+      const result = analyzeForces(forces);
+      // Download JSON
+      const data = { forces, results: { sumFx: result.sumFx, sumFy: result.sumFy, resMag: result.resMag, resAngle: result.resAngle, sumM: result.sumM }, details: result.details };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = 'force_analysis.json'; a.click();
+      URL.revokeObjectURL(url);
+      // Download plot
+      setTimeout(() => Plotly.downloadImage('forcePlot', { format: 'png', filename: 'force_diagram', width: 1200, height: 900 }), 200);
+    });
+
+    // ── Init ──────────────────────────────────────────────────────────────────
+    buildForceRows(3);
+  </script>
+</body>
+</html>
