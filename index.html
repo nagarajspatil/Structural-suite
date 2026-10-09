@@ -81,15 +81,6 @@
         <a href="module5.html" class="px-3 py-1.5 rounded-lg hover:bg-engineering-50 dark:hover:bg-engineering-900/30 hover:text-engineering-700 dark:hover:text-engineering-400 transition-colors">Cross-Section</a>
       </div>
       <div class="flex items-center gap-3">
-        <button id="darkToggle" aria-label="Toggle dark mode"
-          class="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
-          <svg id="sunIcon" class="w-5 h-5 hidden dark:block text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"/>
-          </svg>
-          <svg id="moonIcon" class="w-5 h-5 block dark:hidden text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
-          </svg>
-        </button>
         <!-- Mobile menu button -->
         <button id="mobileMenuBtn" class="md:hidden p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -123,7 +114,7 @@
         for Structural Analysis
       </h1>
       <p class="text-xl text-engineering-200 mb-4 max-w-2xl mx-auto leading-relaxed">
-        Five interactive civil engineering analysis tools running entirely in your browser — no installation, no backend, 100% offline-capable.
+        Five interactive civil engineering analysis tools running entirely in your browser — no installation and no backend required.
       </p>
       <p class="text-engineering-300 text-sm mb-10 font-medium">
         Built by Nagaraj Patil and Associates under the guidance of <strong class="text-white">Dr. M. M. Hanamasagar</strong>
@@ -238,10 +229,8 @@
         </div>
         <div class="mt-auto space-y-1 text-sm text-engineering-200 font-mono">
           <div>• No backend required</div>
-          <div>• Works offline</div>
           <div>• Mobile responsive</div>
-          <div>• Light / Dark mode</div>
-        </div>
+                  </div>
       </div>
     </div>
   </main>
@@ -286,16 +275,6 @@
   </footer>
 
   <script>
-    // Dark mode toggle
-    const darkToggle = document.getElementById('darkToggle');
-    const html = document.documentElement;
-    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-      html.classList.add('dark');
-    }
-    darkToggle.addEventListener('click', () => {
-      html.classList.toggle('dark');
-      localStorage.theme = html.classList.contains('dark') ? 'dark' : 'light';
-    });
 
     // Mobile menu
     const mobileMenuBtn = document.getElementById('mobileMenuBtn');
