@@ -1,0 +1,26 @@
+{
+  "name": "structural-analysis-suite",
+  "version": "1.0.0",
+  "description": "An Integrated Python-Based Suite for Structural Analysis – 5 interactive civil engineering tools running entirely in the browser",
+  "type": "module",
+  "scripts": {
+    "dev": "python3 -m http.server 3000",
+    "dev:node": "npx serve . --listen 3000",
+    "test": "node --experimental-vm-modules tests/unit.test.js",
+    "build": "echo 'Static site — no build needed. Deploy the entire folder as-is.'",
+    "deploy:vercel": "npx vercel",
+    "deploy:netlify": "npx netlify deploy --dir . --prod",
+    "preview": "open index.html"
+  },
+  "keywords": ["civil-engineering", "structural-analysis", "SFD", "BMD", "beam", "torsion", "mohr-circle", "force-system", "cross-section"],
+  "author": "Nagaraj Patil and Associates",
+  "license": "MIT",
+  "devDependencies": {
+    "vitest": "^1.0.0",
+    "serve": "^14.0.0"
+  },
+  "vitest": {
+    "environment": "node",
+    "include": ["tests/**/*.test.js"]
+  }
+}

@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cross-Section Analyzer – StructuralSuite</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: { fontFamily: { sans: ['Inter','sans-serif'], mono: ['JetBrains Mono','monospace'] },
+        colors: { engineering: { 50:'#f0f7ff',100:'#e0effe',200:'#b9dffd',300:'#7cc5fc',400:'#37a7f8',500:'#0c8ee8',600:'#0070c6',700:'#0059a1',800:'#034c85',900:'#07406e',950:'#052849' } } } }
+    }
+  </script>
+  <style>
+    .input-field { @apply w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-engineering-500 transition; }
+    .input-disabled { @apply opacity-40 pointer-events-none; }
+    .result-card { @apply bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 text-center; }
+  </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
+
+  <!-- Navbar -->
+  <nav class="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
+      <a href="index.html" class="flex items-center gap-2 font-bold text-engineering-700 dark:text-engineering-400 text-lg">
+        <svg class="w-7 h-7" viewBox="0 0 32 32" fill="none"><rect x="2" y="14" width="28" height="4" rx="2" fill="currentColor" opacity="0.3"/><polygon points="8,14 16,4 24,14" fill="currentColor"/><rect x="6" y="18" width="4" height="10" fill="currentColor"/><rect x="22" y="18" width="4" height="10" fill="currentColor"/></svg>
+        StructuralSuite
+      </a>
+      <div class="hidden md:flex items-center gap-1 text-sm font-medium">
+        <a href="module1.html" class="px-3 py-1.5 rounded-lg hover:bg-engineering-50 dark:hover:bg-engineering-900/30 transition-colors">Force System</a>
+        <a href="module2.html" class="px-3 py-1.5 rounded-lg hover:bg-engineering-50 dark:hover:bg-engineering-900/30 transition-colors">Mohr's Circle</a>
+        <a href="module3.html" class="px-3 py-1.5 rounded-lg hover:bg-engineering-50 dark:hover:bg-engineering-900/30 transition-colors">Beam Analysis</a>
+        <a href="module4.html" class="px-3 py-1.5 rounded-lg hover:bg-engineering-50 dark:hover:bg-engineering-900/30 transition-colors">Torsion</a>
+        <a href="module5.html" class="px-3 py-1.5 rounded-lg bg-engineering-50 dark:bg-engineering-900/30 text-engineering-700 dark:text-engineering-400 font-semibold">Cross-Section</a>
+      </div>
+      <button id="darkToggle" class="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+        <svg class="w-5 h-5 hidden dark:block text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"/></svg>
+        <svg class="w-5 h-5 block dark:hidden text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Header -->
+  <div class="bg-gradient-to-r from-red-800 to-red-600 text-white py-8 px-4">
+    <div class="max-w-7xl mx-auto">
+      <div class="flex items-center gap-3 mb-2">
+        <span class="text-3xl">📐</span>
+        <div>
+          <p class="text-red-300 text-sm font-medium">Module 5</p>
+          <h1 class="text-2xl md:text-3xl font-bold">Bending & Shear Stress Distribution</h1>
+        </div>
+      </div>
+      <p class="text-red-200 text-sm max-w-2xl">Compute and visualize bending stress σ(y) and shear stress τ(y) distributions for Rectangular, Circular, and I-Beam cross-sections.</p>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div class="grid grid-cols-1 xl:grid-cols-5 gap-6">
+
+      <!-- LEFT: Inputs -->
+      <div class="xl:col-span-2 space-y-4">
+
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 space-y-4">
+          <div class="flex items-center justify-between">
+            <h2 class="font-bold text-slate-900 dark:text-white">Section & Loading</h2>
+            <div class="flex gap-2">
+              <button id="btnReset" class="text-xs bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 px-3 py-1.5 rounded-lg font-medium">Reset</button>
+              <button id="btnDownload" class="text-xs bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg font-medium">Download</button>
+            </div>
+          </div>
+
+          <!-- Section type -->
+          <div>
+            <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Cross-Section Profile</label>
+            <div class="grid grid-cols-3 gap-2">
+              <button id="btnRect" class="px-3 py-2 rounded-lg text-sm font-medium border-2 border-red-600 bg-red-600 text-white" onclick="setSection('Rectangular')">▬ Rect</button>
+              <button id="btnCirc" class="px-3 py-2 rounded-lg text-sm font-medium border-2 border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400" onclick="setSection('Circular')">● Circle</button>
+              <button id="btnIBeam" class="px-3 py-2 rounded-lg text-sm font-medium border-2 border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400" onclick="setSection('IBeam')">Ⅰ I-Beam</button>
+            </div>
+          </div>
+
+          <!-- Rectangular inputs -->
+          <div id="rectInputs" class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Width b (mm)</label>
+              <input type="number" id="b_rect" value="150" step="5" min="1" class="input-field" />
+            </div>
+            <div>
+              <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Height h (mm)</label>
+              <input type="number" id="h_rect" value="300" step="5" min="1" class="input-field" />
+            </div>
+          </div>
+
+          <!-- Circular inputs -->
+          <div id="circInputs" class="hidden">
+            <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Diameter d (mm)</label>
+            <input type="number" id="d_circ" value="200" step="5" min="1" class="input-field" />
+          </div>
+
+          <!-- I-Beam inputs -->
+          <div id="ibeamInputs" class="hidden grid grid-cols-2 gap-3">
+            <div>
+              <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Flange Width b (mm)</label>
+              <input type="number" id="b_ib" value="200" step="5" min="1" class="input-field" />
+            </div>
+            <div>
+              <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Total Height h (mm)</label>
+              <input type="number" id="h_ib" value="400" step="5" min="1" class="input-field" />
+            </div>
+            <div>
+              <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Flange Thickness tf (mm)</label>
+              <input type="number" id="tf_ib" value="20" step="1" min="1" class="input-field" />
+            </div>
+            <div>
+              <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Web Thickness tw (mm)</label>
+              <input type="number" id="tw_ib" value="12" step="1" min="1" class="input-field" />
+            </div>
+          </div>
+
+          <!-- Loading -->
+          <div class="grid grid-cols-2 gap-3 pt-2 border-t border-slate-200 dark:border-slate-700">
+            <div>
+              <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Bending Moment M (kN·m)</label>
+              <input type="number" id="momentInput" value="50" step="5" class="input-field" />
+            </div>
+            <div>
+              <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Shear Force V (kN)</label>
+              <input type="number" id="shearInput" value="80" step="5" class="input-field" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Error box -->
+        <div id="errorBox"></div>
+
+        <!-- Results -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-5">
+          <h2 class="font-bold text-slate-900 dark:text-white mb-3">Section Properties & Results</h2>
+          <div class="space-y-3">
+            <div class="result-card">
+              <p class="text-xs text-slate-500 mb-1">Moment of Inertia I</p>
+              <p id="res_I_mm" class="text-sm font-bold font-mono text-engineering-700 dark:text-engineering-400">—</p>
+              <p class="text-xs text-slate-400">mm⁴</p>
+              <p id="res_I_m" class="text-xs font-mono text-slate-400 mt-1">—</p>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div class="result-card">
+                <p class="text-xs text-slate-500 mb-1">Max Bending Stress</p>
+                <p id="res_maxBend" class="text-xl font-bold font-mono text-red-700 dark:text-red-400">—</p>
+                <p class="text-xs text-slate-400">MPa</p>
+              </div>
+              <div class="result-card">
+                <p class="text-xs text-slate-500 mb-1">Max Shear Stress</p>
+                <p id="res_maxShear" class="text-xl font-bold font-mono text-green-700 dark:text-green-400">—</p>
+                <p class="text-xs text-slate-400">MPa</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cross-section sketch -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-5">
+          <h3 class="font-semibold text-slate-900 dark:text-white mb-3 text-sm">Cross-Section Sketch (with N.A.)</h3>
+          <canvas id="sectionSketch" class="w-full" style="height:200px;max-height:200px;"></canvas>
+        </div>
+
+        <!-- Theory -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+          <button data-collapse-btn="theoryPanel" class="w-full flex items-center justify-between px-5 py-4 text-left font-semibold text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+            <span>📚 Theory & Formulas</span>
+            <svg class="chevron w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <div id="theoryPanel" class="hidden px-5 pb-5 space-y-2 text-xs">
+            <div class="space-y-2 bg-slate-50 dark:bg-slate-800 rounded-lg p-3">
+              <div id="teq1"></div><div id="teq2"></div><div id="teq3"></div><div id="teq4"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Plots -->
+      <div class="xl:col-span-3 space-y-4">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-5">
+          <h2 class="font-bold text-slate-900 dark:text-white mb-3">Bending Stress Distribution σ(y)</h2>
+          <div id="bendingPlot" class="w-full" style="height:360px;"></div>
+        </div>
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-5">
+          <h2 class="font-bold text-slate-900 dark:text-white mb-3">Transverse Shear Stress Distribution τ(y)</h2>
+          <div id="shearPlot" class="w-full" style="height:360px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-slate-900 text-slate-400 py-8 px-4 border-t border-slate-800 mt-8">
+    <div class="max-w-5xl mx-auto text-sm text-center space-y-1">
+      <p class="text-white font-semibold">An Integrated Python-Based Suite for Structural Analysis</p>
+      <p>Built by <strong class="text-white">Nagaraj Patil and Associates</strong> under the guidance of <strong class="text-white">Dr. M. M. Hanamasagar</strong></p>
+      <p class="text-slate-500">Major Project – 7th Semester, B.E. Civil Engineering · © 2026</p>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { analyzeRectangular, analyzeCircular, analyzeIBeam } from './src/lib/crossSectionAnalyzer.js';
+
+    const html = document.documentElement;
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && matchMedia('(prefers-color-scheme: dark)').matches)) html.classList.add('dark');
+    document.getElementById('darkToggle').addEventListener('click', () => {
+      html.classList.toggle('dark'); localStorage.theme = html.classList.contains('dark') ? 'dark' : 'light'; update();
+    });
+
+    document.querySelectorAll('[data-collapse-btn]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const panel = document.getElementById(btn.dataset.collapseBtn);
+        panel.classList.toggle('hidden');
+        btn.querySelector('.chevron').style.transform = panel.classList.contains('hidden') ? '' : 'rotate(180deg)';
+      });
+    });
+
+    // KaTeX
+    [['teq1','\\sigma = \\frac{M \\cdot y}{I}'],['teq2','\\tau = \\frac{V \\cdot Q}{I \\cdot t}'],['teq3','Q_{rect} = \\frac{b}{2}\\left(\\frac{h^2}{4} - y^2\\right)'],['teq4','Q_{circ} = \\frac{2}{3}(r^2 - y^2)^{3/2}']]
+      .forEach(([id, latex]) => { const el = document.getElementById(id); if(el) katex.render(latex, el, {throwOnError:false}); });
+
+    let currentSection = 'Rectangular';
+
+    window.setSection = function(type) {
+      currentSection = type;
+      ['Rectangular','Circular','IBeam'].forEach(s => {
+        const el = document.getElementById(s === 'Rectangular' ? 'rectInputs' : s === 'Circular' ? 'circInputs' : 'ibeamInputs');
+        const btn = document.getElementById(s === 'Rectangular' ? 'btnRect' : s === 'Circular' ? 'btnCirc' : 'btnIBeam');
+        if (s === type) {
+          el.classList.remove('hidden');
+          btn.className = btn.className.replace(/border-slate-300.*?text-slate-[46]00[^'"]*/, '').trim();
+          btn.className = `px-3 py-2 rounded-lg text-sm font-medium border-2 border-red-600 bg-red-600 text-white`;
+        } else {
+          el.classList.add('hidden');
+          btn.className = `px-3 py-2 rounded-lg text-sm font-medium border-2 border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400`;
+        }
+      });
+      update();
+    };
+
+    // Listen to all inputs
+    const allInputIds = ['b_rect','h_rect','d_circ','b_ib','h_ib','tf_ib','tw_ib','momentInput','shearInput'];
+    allInputIds.forEach(id => document.getElementById(id).addEventListener('input', debounce(update, 200)));
+
+    function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
+
+    function update() {
+      const errBox = document.getElementById('errorBox');
+      errBox.innerHTML = '';
+
+      const M = parseFloat(document.getElementById('momentInput').value) || 0;
+      const V = parseFloat(document.getElementById('shearInput').value) || 0;
+
+      let result;
+      try {
+        if (currentSection === 'Rectangular') {
+          const b = parseFloat(document.getElementById('b_rect').value) || 150;
+          const h = parseFloat(document.getElementById('h_rect').value) || 300;
+          result = analyzeRectangular(b, h, M, V);
+        } else if (currentSection === 'Circular') {
+          const d = parseFloat(document.getElementById('d_circ').value) || 200;
+          result = analyzeCircular(d, M, V);
+        } else {
+          const b = parseFloat(document.getElementById('b_ib').value) || 200;
+          const h = parseFloat(document.getElementById('h_ib').value) || 400;
+          const tf = parseFloat(document.getElementById('tf_ib').value) || 20;
+          const tw = parseFloat(document.getElementById('tw_ib').value) || 12;
+          result = analyzeIBeam(b, h, tf, tw, M, V);
+        }
+      } catch(e) {
+        errBox.innerHTML = `<div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-300 rounded-xl p-4 text-sm">${e.message}</div>`;
+        return;
+      }
+
+      const f = (n, d = 2) => parseFloat(n.toFixed(d)).toString();
+      document.getElementById('res_I_mm').textContent = result.I.toExponential(3) + ' mm⁴';
+      document.getElementById('res_I_m').textContent = (result.I * 1e-12).toExponential(4) + ' m⁴';
+      document.getElementById('res_maxBend').textContent = f(Math.max(...result.bendingStress.map(Math.abs)));
+      document.getElementById('res_maxShear').textContent = f(Math.max(...result.shearStress));
+
+      drawPlots(result);
+      drawSectionSketch(result);
+    }
+
+    function drawPlots(result) {
+      const isDark = html.classList.contains('dark');
+      const bg = isDark ? '#0f172a' : '#ffffff';
+      const gridColor = isDark ? '#334155' : '#e2e8f0';
+      const textColor = isDark ? '#94a3b8' : '#475569';
+      const { yVals, bendingStress, shearStress } = result;
+
+      const baseLayout = {
+        paper_bgcolor:bg, plot_bgcolor:bg,
+        font:{family:'Inter, sans-serif', color:textColor, size:11},
+        margin:{t:20, b:50, l:65, r:20},
+        xaxis:{gridcolor:gridColor, zeroline:true, zerolinecolor:textColor},
+        yaxis:{gridcolor:gridColor, zeroline:true, zerolinecolor:textColor, title:'y — position from N.A. (mm)'},
+        shapes:[{type:'line', x0:Math.min(...bendingStress)-1, x1:Math.max(...bendingStress)+1, y0:0, y1:0, line:{color:textColor, width:1.5, dash:'dot'}}],
+      };
+
+      // Bending stress plot
+      const bendTraces = [
+        { type:'scatter', mode:'lines', x:bendingStress, y:yVals, line:{color:'#dc2626', width:2}, name:'σ(y)' },
+        { type:'scatter', mode:'none', x:bendingStress, y:yVals,
+          fill:'tozerox', fillcolor: isDark?'rgba(220,38,38,0.12)':'rgba(220,38,38,0.1)', showlegend:false },
+      ];
+      Plotly.react('bendingPlot', bendTraces, {
+        ...baseLayout,
+        xaxis:{...baseLayout.xaxis, title:'Bending Stress σ (MPa)'},
+        shapes: [{type:'line', x0:0, x1:0, y0:Math.min(...yVals), y1:Math.max(...yVals), line:{color:textColor,width:1,dash:'dot'}},
+                 {type:'line', x0:Math.min(...bendingStress)-Math.max(...bendingStress)*0.05, x1:Math.max(...bendingStress)*1.05, y0:0, y1:0, line:{color:textColor,width:1.5,dash:'dot'}}],
+        annotations:[
+          {x:Math.max(...bendingStress), y:yVals[bendingStress.indexOf(Math.max(...bendingStress))], text:`<b>Tension<br/>${Math.max(...bendingStress).toFixed(2)} MPa</b>`, font:{color:'#dc2626',size:10}, bgcolor: isDark?'#3b1515':'#fef2f2', showarrow:true, arrowhead:2, arrowcolor:'#dc2626'},
+          {x:Math.min(...bendingStress), y:yVals[bendingStress.indexOf(Math.min(...bendingStress))], text:`<b>Compression<br/>${Math.min(...bendingStress).toFixed(2)} MPa</b>`, font:{color:'#3b82f6',size:10}, bgcolor: isDark?'#1e3a5f':'#eff6ff', showarrow:true, arrowhead:2, arrowcolor:'#3b82f6'},
+        ],
+        legend:{bgcolor: isDark?'#1e293b':'#f8fafc', borderwidth:1},
+      }, {responsive:true});
+
+      // Shear stress plot
+      const shearTraces = [
+        { type:'scatter', mode:'lines', x:shearStress, y:yVals, line:{color:'#16a34a', width:2}, name:'τ(y)' },
+        { type:'scatter', mode:'none', x:shearStress, y:yVals,
+          fill:'tozerox', fillcolor: isDark?'rgba(22,163,74,0.12)':'rgba(22,163,74,0.1)', showlegend:false },
+      ];
+      const maxTau = Math.max(...shearStress);
+      const maxTauIdx = shearStress.indexOf(maxTau);
+      Plotly.react('shearPlot', shearTraces, {
+        ...baseLayout,
+        xaxis:{...baseLayout.xaxis, title:'Shear Stress τ (MPa)'},
+        shapes:[{type:'line', x0:0, x1:0, y0:Math.min(...yVals), y1:Math.max(...yVals), line:{color:textColor,width:1,dash:'dot'}},
+                {type:'line', x0:-maxTau*0.05, x1:maxTau*1.05, y0:0, y1:0, line:{color:textColor,width:1.5,dash:'dot'}}],
+        annotations:[
+          {x:maxTau, y:yVals[maxTauIdx], text:`<b>τmax=${maxTau.toFixed(2)} MPa</b>`, font:{color:'#16a34a',size:11}, bgcolor: isDark?'#14532d':'#f0fdf4', showarrow:true, arrowhead:2, arrowcolor:'#16a34a'},
+        ],
+        legend:{bgcolor: isDark?'#1e293b':'#f8fafc', borderwidth:1},
+      }, {responsive:true});
+    }
+
+    function drawSectionSketch(result) {
+      const canvas = document.getElementById('sectionSketch');
+      const W = canvas.offsetWidth || 300;
+      const H = 200;
+      canvas.width = W;
+      canvas.height = H;
+      const ctx = canvas.getContext('2d');
+      const isDark = html.classList.contains('dark');
+
+      ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = isDark ? '#0f172a' : '#ffffff';
+      ctx.fillRect(0, 0, W, H);
+
+      const cx = W / 2, cy = H / 2;
+      ctx.strokeStyle = isDark ? '#94a3b8' : '#475569';
+      ctx.fillStyle = isDark ? 'rgba(148,163,184,0.15)' : 'rgba(71,85,105,0.1)';
+
+      if (currentSection === 'Rectangular') {
+        const scale = Math.min(W * 0.7 / result.depthLabel, H * 0.7 / result.depthLabel) * 0.8;
+        const b = parseFloat(document.getElementById('b_rect').value) || 150;
+        const h = result.depthLabel;
+        const bC = b * scale, hC = h * scale;
+        ctx.fillRect(cx - bC/2, cy - hC/2, bC, hC);
+        ctx.strokeRect(cx - bC/2, cy - hC/2, bC, hC);
+        // N.A. line
+        ctx.setLineDash([5, 3]);
+        ctx.strokeStyle = '#dc2626';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(cx - bC/2 - 10, cy); ctx.lineTo(cx + bC/2 + 10, cy); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = isDark ? '#94a3b8' : '#475569';
+        ctx.font = '10px Inter';
+        ctx.textAlign = 'center';
+        ctx.fillText(`b=${b}mm`, cx, cy + hC/2 + 15);
+        ctx.fillText(`h=${h}mm`, cx + bC/2 + 25, cy);
+
+      } else if (currentSection === 'Circular') {
+        const d = result.depthLabel;
+        const r = d / 2;
+        const rC = Math.min(W, H) * 0.35;
+        ctx.beginPath(); ctx.arc(cx, cy, rC, 0, 2 * Math.PI);
+        ctx.fill(); ctx.stroke();
+        // N.A.
+        ctx.setLineDash([5, 3]); ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(cx - rC - 10, cy); ctx.lineTo(cx + rC + 10, cy); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = isDark ? '#94a3b8' : '#475569';
+        ctx.font = '10px Inter'; ctx.textAlign = 'center';
+        ctx.fillText(`d=${d}mm`, cx, cy + rC + 16);
+
+      } else {
+        // I-Beam
+        const b = parseFloat(document.getElementById('b_ib').value) || 200;
+        const h = result.depthLabel;
+        const tf = parseFloat(document.getElementById('tf_ib').value) || 20;
+        const tw = parseFloat(document.getElementById('tw_ib').value) || 12;
+        const scale = Math.min((W * 0.65) / b, (H * 0.8) / h);
+        const bC = b * scale, hC = h * scale, tfC = tf * scale, twC = tw * scale;
+        const x0 = cx - bC/2, y0 = cy - hC/2;
+        // Top flange
+        ctx.fillRect(x0, y0, bC, tfC); ctx.strokeRect(x0, y0, bC, tfC);
+        // Web
+        ctx.fillRect(cx - twC/2, y0 + tfC, twC, hC - 2*tfC); ctx.strokeRect(cx - twC/2, y0 + tfC, twC, hC - 2*tfC);
+        // Bottom flange
+        ctx.fillRect(x0, y0 + hC - tfC, bC, tfC); ctx.strokeRect(x0, y0 + hC - tfC, bC, tfC);
+        // N.A.
+        ctx.setLineDash([5, 3]); ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(x0 - 10, cy); ctx.lineTo(x0 + bC + 10, cy); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = isDark ? '#94a3b8' : '#475569';
+        ctx.font = '9px Inter'; ctx.textAlign = 'center';
+        ctx.fillText(`b=${b}, h=${h}, tf=${tf}, tw=${tw} (mm)`, cx, y0 + hC + 15);
+      }
+
+      // N.A. label
+      ctx.fillStyle = '#dc2626';
+      ctx.font = '10px Inter'; ctx.textAlign = 'left';
+      ctx.fillText('N.A.', cx + (currentSection === 'Circular' ? Math.min(W,H)*0.35+5 : (parseFloat(document.getElementById('b_rect')?.value||200)/2*(Math.min(W*0.7/result.depthLabel,H*0.7/result.depthLabel)*0.8)+5)), cy - 4);
+    }
+
+    // Reset & download
+    document.getElementById('btnReset').addEventListener('click', () => {
+      document.getElementById('b_rect').value = 150; document.getElementById('h_rect').value = 300;
+      document.getElementById('d_circ').value = 200;
+      document.getElementById('b_ib').value = 200; document.getElementById('h_ib').value = 400;
+      document.getElementById('tf_ib').value = 20; document.getElementById('tw_ib').value = 12;
+      document.getElementById('momentInput').value = 50; document.getElementById('shearInput').value = 80;
+      setSection('Rectangular'); update();
+    });
+    document.getElementById('btnDownload').addEventListener('click', () => {
+      Plotly.downloadImage('bendingPlot', {format:'png', filename:'bending_stress', width:1200, height:700});
+      setTimeout(() => Plotly.downloadImage('shearPlot', {format:'png', filename:'shear_stress', width:1200, height:700}), 500);
+    });
+
+    setSection('Rectangular');
+    update();
+  </script>
+</body>
+</html>

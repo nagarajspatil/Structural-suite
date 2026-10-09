@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Beam Analyzer – SFD/BMD – StructuralSuite</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: { fontFamily: { sans: ['Inter','sans-serif'], mono: ['JetBrains Mono','monospace'] },
+        colors: { engineering: { 50:'#f0f7ff',100:'#e0effe',200:'#b9dffd',300:'#7cc5fc',400:'#37a7f8',500:'#0c8ee8',600:'#0070c6',700:'#0059a1',800:'#034c85',900:'#07406e',950:'#052849' } } } }
+    }
+  </script>
+  <style>
+    .input-field { width:100%; border-radius:0.5rem; border:1px solid #cbd5e1; background:#fff; padding:0.375rem 0.75rem; font-size:0.875rem; font-family:'JetBrains Mono',monospace; }
+    .dark .input-field { border-color:#475569; background:#1e293b; color:#e2e8f0; }
+    .input-field:focus { outline:none; ring:2px solid #0070c6; }
+    .load-row { display:grid; gap:0.5rem; padding:0.75rem; background:rgba(248,250,252,0.8); border:1px solid #e2e8f0; border-radius:0.75rem; margin-bottom:0.5rem; }
+    .dark .load-row { background:rgba(30,41,59,0.5); border-color:#334155; }
+    .btn-primary { background:#0070c6; color:#fff; border-radius:0.5rem; padding:0.5rem 1rem; font-size:0.875rem; font-weight:600; transition:background 0.2s; cursor:pointer; border:none; }
+    .btn-primary:hover { background:#0059a1; }
+    .btn-danger { background:#ef4444; color:#fff; border-radius:0.375rem; padding:0.25rem 0.5rem; font-size:0.75rem; cursor:pointer; border:none; }
+    .btn-secondary { background:#f1f5f9; color:#475569; border-radius:0.5rem; padding:0.375rem 0.75rem; font-size:0.875rem; font-weight:500; cursor:pointer; border:1px solid #cbd5e1; }
+    .dark .btn-secondary { background:#1e293b; color:#94a3b8; border-color:#334155; }
+    select.input-field { appearance:auto; }
+  </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
+
+  <!-- Navbar -->
+  <nav class="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
+      <a href="index.html" class="flex items-center gap-2 font-bold text-engineering-700 dark:text-engineering-400 text-lg">
+        <svg class="w-7 h-7" viewBox="0 0 32 32" fill="none"><rect x="2" y="14" width="28" height="4" rx="2" fill="currentColor" opacity="0.3"/><polygon points="8,14 16,4 24,14" fill="currentColor"/><rect x="6" y="18" width="4" height="10" fill="currentColor"/><rect x="22" y="18" width="4" height="10" fill="currentColor"/></svg>
+        StructuralSuite
+      </a>
+      <div class="hidden md:flex items-center gap-1 text-sm font-medium">
+        <a href="module1.html" class="px-3 py-1.5 rounded-lg hover:bg-engineering-50 dark:hover:bg-engineering-900/30 transition-colors">Force System</a>
+        <a href="module2.html" class="px-3 py-1.5 rounded-lg hover:bg-engineering-50 dark:hover:bg-engineering-900/30 transition-colors">Mohr's Circle</a>
+        <a href="module3.html" class="px-3 py-1.5 rounded-lg bg-engineering-50 dark:bg-engineering-900/30 text-engineering-700 dark:text-engineering-400 font-semibold">Beam Analysis</a>
+        <a href="module4.html" class="px-3 py-1.5 rounded-lg hover:bg-engineering-50 dark:hover:bg-engineering-900/30 transition-colors">Torsion</a>
+        <a href="module5.html" class="px-3 py-1.5 rounded-lg hover:bg-engineering-50 dark:hover:bg-engineering-900/30 transition-colors">Cross-Section</a>
+      </div>
+      <button id="darkToggle" class="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+        <svg class="w-5 h-5 hidden dark:block text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"/></svg>
+        <svg class="w-5 h-5 block dark:hidden text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Header -->
+  <div class="bg-gradient-to-r from-green-800 to-green-600 text-white py-8 px-4">
+    <div class="max-w-7xl mx-auto">
+      <div class="flex items-center gap-3 mb-2">
+        <span class="text-3xl">🏗️</span>
+        <div>
+          <p class="text-green-300 text-sm font-medium">Module 3</p>
+          <h1 class="text-2xl md:text-3xl font-bold">Beam Analyzer — SFD, BMD & Reactions</h1>
+        </div>
+      </div>
+      <p class="text-green-200 text-sm max-w-2xl">Full shear force & bending moment diagrams for 4 support configurations. Handles point loads, UDL, and trapezoidal UVL.</p>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div class="grid grid-cols-1 xl:grid-cols-5 gap-6">
+
+      <!-- LEFT: Inputs -->
+      <div class="xl:col-span-2 space-y-4">
+
+        <!-- Example Problems -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-4">
+          <h3 class="font-semibold text-slate-900 dark:text-white mb-3 text-sm">📋 Quick Examples</h3>
+          <div class="grid grid-cols-2 gap-2">
+            <button onclick="loadExample(1)" class="btn-secondary text-xs py-2">SS Beam + UDL</button>
+            <button onclick="loadExample(2)" class="btn-secondary text-xs py-2">Cantilever + PL</button>
+            <button onclick="loadExample(3)" class="btn-secondary text-xs py-2">Propped Cantilever</button>
+            <button onclick="loadExample(4)" class="btn-secondary text-xs py-2">Overhanging Beam</button>
+          </div>
+        </div>
+
+        <!-- Config -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 space-y-4">
+          <div class="flex items-center justify-between">
+            <h2 class="font-bold text-slate-900 dark:text-white">Beam Configuration</h2>
+            <div class="flex gap-2">
+              <button id="btnReset" class="btn-secondary text-xs py-1.5 px-3">Reset</button>
+              <button id="btnDownload" class="btn-primary text-xs py-1.5 px-3">Download</button>
+            </div>
+          </div>
+
+          <div>
+            <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Support Configuration</label>
+            <select id="supportConfig" class="input-field">
+              <option value="1">1 – Hinge + Roller (Simply Supported)</option>
+              <option value="2">2 – Fixed Support (Cantilever)</option>
+              <option value="3">3 – Fixed + Roller (Propped Cantilever)</option>
+              <option value="4">4 – Overhanging Beam (Two supports)</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Beam Length L (m)</label>
+            <input type="number" id="beamLength" value="10" min="0.1" step="0.5" class="input-field" />
+          </div>
+          <div id="overhangInputs" class="hidden grid grid-cols-2 gap-3">
+            <div>
+              <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Support A position a (m)</label>
+              <input type="number" id="aPosInput" value="2" min="0" step="0.5" class="input-field" />
+            </div>
+            <div>
+              <label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1">Support B position b (m)</label>
+              <input type="number" id="bPosInput" value="8" min="0" step="0.5" class="input-field" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Point Loads -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-5">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-semibold text-slate-900 dark:text-white text-sm">Point Loads</h3>
+            <button onclick="addPointLoad()" class="btn-primary text-xs py-1.5 px-3">+ Add</button>
+          </div>
+          <div id="pointLoadRows"></div>
+          <p class="text-xs text-slate-400 mt-2">P in kN (+ve downward), position in m</p>
+        </div>
+
+        <!-- UDLs -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-5">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-semibold text-slate-900 dark:text-white text-sm">Uniformly Distributed Loads (UDL)</h3>
+            <button onclick="addUDL()" class="btn-primary text-xs py-1.5 px-3">+ Add</button>
+          </div>
+          <div id="udlRows"></div>
+          <p class="text-xs text-slate-400 mt-2">w in kN/m (+ve downward), start & end in m</p>
+        </div>
+
+        <!-- UVLs -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-5">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-semibold text-slate-900 dark:text-white text-sm">Trapezoidal Loads (UVL)</h3>
+            <button onclick="addUVL()" class="btn-primary text-xs py-1.5 px-3">+ Add</button>
+          </div>
+          <div id="uvlRows"></div>
+          <p class="text-xs text-slate-400 mt-2">w1/w2 in kN/m, positions in m</p>
+        </div>
+
+        <!-- Error box -->
+        <div id="errorBox"></div>
+
+        <!-- Analyze button -->
+        <button id="btnAnalyze" class="btn-primary w-full py-3 text-base rounded-xl">⚙️ Analyze Beam</button>
+
+        <!-- Theory -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+          <button data-collapse-btn="theoryPanel" class="w-full flex items-center justify-between px-5 py-4 text-left font-semibold text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+            <span>📚 Theory & Sign Convention</span>
+            <svg class="chevron w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <div id="theoryPanel" class="hidden px-5 pb-5 text-xs text-slate-600 dark:text-slate-300 space-y-2">
+            <p><strong>Sign Convention:</strong></p>
+            <ul class="list-disc list-inside space-y-1 ml-2">
+              <li>x measured from LEFT end of beam</li>
+              <li>Downward loads are <strong>POSITIVE</strong></li>
+              <li>Shear force: +ve when resultant of forces to LEFT of section acts <strong>UPWARD</strong></li>
+              <li>Bending moment: <strong>SAGGING = +ve</strong>, hogging = −ve</li>
+            </ul>
+            <div class="bg-slate-100 dark:bg-slate-800 rounded-lg p-3 mt-2 space-y-1">
+              <div id="beq1"></div><div id="beq2"></div><div id="beq3"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Results -->
+      <div class="xl:col-span-3 space-y-4">
+
+        <!-- Reaction results -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-5">
+          <h2 class="font-bold text-slate-900 dark:text-white mb-4">Reactions & Summary</h2>
+          <div id="reactionsDisplay" class="text-slate-500 dark:text-slate-400 text-sm">Run analysis to see results.</div>
+        </div>
+
+        <!-- Beam illustration -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-5">
+          <h2 class="font-bold text-slate-900 dark:text-white mb-3">Beam Load Illustration</h2>
+          <div id="beamIllustration" class="w-full" style="height:200px;"></div>
+        </div>
+
+        <!-- SFD -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-5">
+          <h2 class="font-bold text-slate-900 dark:text-white mb-3">Shear Force Diagram (kN)</h2>
+          <div id="sfdPlot" class="w-full" style="height:280px;"></div>
+        </div>
+
+        <!-- BMD -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-5">
+          <h2 class="font-bold text-slate-900 dark:text-white mb-3">Bending Moment Diagram (kN·m) — Sagging +ve</h2>
+          <div id="bmdPlot" class="w-full" style="height:280px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-slate-900 text-slate-400 py-8 px-4 border-t border-slate-800 mt-8">
+    <div class="max-w-5xl mx-auto text-sm text-center space-y-1">
+      <p class="text-white font-semibold">An Integrated Python-Based Suite for Structural Analysis</p>
+      <p>Built by <strong class="text-white">Nagaraj Patil and Associates</strong> under the guidance of <strong class="text-white">Dr. M. M. Hanamasagar</strong></p>
+      <p class="text-slate-500">Major Project – 7th Semester, B.E. Civil Engineering · © 2026</p>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { calculateBeamComplete, findContraflexure, validateBeamInputs } from './src/lib/beamAnalyzer.js';
+
+    // Dark mode
+    const html = document.documentElement;
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && matchMedia('(prefers-color-scheme: dark)').matches)) html.classList.add('dark');
+    document.getElementById('darkToggle').addEventListener('click', () => {
+      html.classList.toggle('dark');
+      localStorage.theme = html.classList.contains('dark') ? 'dark' : 'light';
+    });
+
+    // Collapsibles
+    document.querySelectorAll('[data-collapse-btn]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const panel = document.getElementById(btn.dataset.collapseBtn);
+        panel.classList.toggle('hidden');
+        btn.querySelector('.chevron').style.transform = panel.classList.contains('hidden') ? '' : 'rotate(180deg)';
+      });
+    });
+
+    // KaTeX
+    [['beq1','R_B = \\frac{M_0}{L}'],['beq2','V(x) = \\sum P_i\\cdot H(x-a_i) + \\int_0^x w(\\xi)\\,d\\xi'],['beq3','M(x) = \\sum P_i(x-a_i)H(x-a_i) + \\int_0^x w(\\xi)(x-\\xi)\\,d\\xi']]
+      .forEach(([id, latex]) => { const el = document.getElementById(id); if(el) katex.render(latex, el, {throwOnError:false, displayMode:false}); });
+
+    // ── Load management ───────────────────────────────────────────────────────
+    let plCounter = 0, udlCounter = 0, uvlCounter = 0;
+
+    window.addPointLoad = function(P = 20, a = 5) {
+      plCounter++;
+      const id = `pl_${plCounter}`;
+      document.getElementById('pointLoadRows').insertAdjacentHTML('beforeend', `
+        <div class="load-row" id="${id}" style="grid-template-columns:1fr 1fr auto;">
+          <div><label class="text-xs text-slate-500">P (kN, +ve↓)</label><input type="number" class="input-field mt-1" value="${P}" placeholder="kN" step="1" /></div>
+          <div><label class="text-xs text-slate-500">Position (m)</label><input type="number" class="input-field mt-1" value="${a}" placeholder="m" step="0.5" /></div>
+          <button class="btn-danger mt-4" onclick="document.getElementById('${id}').remove()">✕</button>
+        </div>`);
+    };
+
+    window.addUDL = function(w = 10, l1 = 0, l2 = 10) {
+      udlCounter++;
+      const id = `udl_${udlCounter}`;
+      document.getElementById('udlRows').insertAdjacentHTML('beforeend', `
+        <div class="load-row" id="${id}" style="grid-template-columns:1fr 1fr 1fr auto;">
+          <div><label class="text-xs text-slate-500">w (kN/m)</label><input type="number" class="input-field mt-1" value="${w}" step="1" /></div>
+          <div><label class="text-xs text-slate-500">Start (m)</label><input type="number" class="input-field mt-1" value="${l1}" step="0.5" /></div>
+          <div><label class="text-xs text-slate-500">End (m)</label><input type="number" class="input-field mt-1" value="${l2}" step="0.5" /></div>
+          <button class="btn-danger mt-4" onclick="document.getElementById('${id}').remove()">✕</button>
+        </div>`);
+    };
+
+    window.addUVL = function(w1 = 0, w2 = 20, l1 = 0, l2 = 10) {
+      uvlCounter++;
+      const id = `uvl_${uvlCounter}`;
+      document.getElementById('uvlRows').insertAdjacentHTML('beforeend', `
+        <div class="load-row" id="${id}" style="grid-template-columns:1fr 1fr 1fr 1fr auto;">
+          <div><label class="text-xs text-slate-500">w1 (kN/m)</label><input type="number" class="input-field mt-1" value="${w1}" step="1" /></div>
+          <div><label class="text-xs text-slate-500">w2 (kN/m)</label><input type="number" class="input-field mt-1" value="${w2}" step="1" /></div>
+          <div><label class="text-xs text-slate-500">Start (m)</label><input type="number" class="input-field mt-1" value="${l1}" step="0.5" /></div>
+          <div><label class="text-xs text-slate-500">End (m)</label><input type="number" class="input-field mt-1" value="${l2}" step="0.5" /></div>
+          <button class="btn-danger mt-4" onclick="document.getElementById('${id}').remove()">✕</button>
+        </div>`);
+    };
+
+    // ── Example problems ──────────────────────────────────────────────────────
+    window.loadExample = function(n) {
+      clearAllLoads();
+      if (n === 1) {
+        // SS beam 10m, UDL 20kN/m — Ra=Rb=100kN, Mmax=250kNm
+        document.getElementById('supportConfig').value = '1';
+        document.getElementById('beamLength').value = 10;
+        addUDL(20, 0, 10);
+      } else if (n === 2) {
+        // Cantilever 5m, PL 30kN at tip
+        document.getElementById('supportConfig').value = '2';
+        document.getElementById('beamLength').value = 5;
+        addPointLoad(30, 5);
+      } else if (n === 3) {
+        // Propped cantilever 8m, UDL 15kN/m — Rb = 3wL/8 = 45kN
+        document.getElementById('supportConfig').value = '3';
+        document.getElementById('beamLength').value = 8;
+        addUDL(15, 0, 8);
+      } else if (n === 4) {
+        // Overhanging: L=10, supports at a=2, b=7, PL 30kN at x=10
+        document.getElementById('supportConfig').value = '4';
+        document.getElementById('beamLength').value = 10;
+        document.getElementById('aPosInput').value = 2;
+        document.getElementById('bPosInput').value = 7;
+        document.getElementById('overhangInputs').classList.remove('hidden');
+        addPointLoad(40, 10);
+        addUDL(10, 2, 7);
+      }
+      onSupportChange();
+      analyze();
+    };
+
+    function clearAllLoads() {
+      document.getElementById('pointLoadRows').innerHTML = '';
+      document.getElementById('udlRows').innerHTML = '';
+      document.getElementById('uvlRows').innerHTML = '';
+    }
+
+    // ── Support config ────────────────────────────────────────────────────────
+    function onSupportChange() {
+      const val = document.getElementById('supportConfig').value;
+      document.getElementById('overhangInputs').classList.toggle('hidden', val !== '4');
+    }
+    document.getElementById('supportConfig').addEventListener('change', onSupportChange);
+
+    // ── Read inputs ───────────────────────────────────────────────────────────
+    function readLoads() {
+      const pointLoads = [];
+      document.getElementById('pointLoadRows').querySelectorAll('.load-row').forEach(row => {
+        const ins = row.querySelectorAll('input');
+        pointLoads.push([parseFloat(ins[0].value)||0, parseFloat(ins[1].value)||0]);
+      });
+      const udls = [];
+      document.getElementById('udlRows').querySelectorAll('.load-row').forEach(row => {
+        const ins = row.querySelectorAll('input');
+        udls.push([parseFloat(ins[0].value)||0, parseFloat(ins[1].value)||0, parseFloat(ins[2].value)||0]);
+      });
+      const uvls = [];
+      document.getElementById('uvlRows').querySelectorAll('.load-row').forEach(row => {
+        const ins = row.querySelectorAll('input');
+        uvls.push([parseFloat(ins[0].value)||0, parseFloat(ins[1].value)||0, parseFloat(ins[2].value)||0, parseFloat(ins[3].value)||0]);
+      });
+      return { pointLoads, udls, uvls };
+    }
+
+    // ── Main analyze ──────────────────────────────────────────────────────────
+    function analyze() {
+      const errBox = document.getElementById('errorBox');
+      errBox.innerHTML = '';
+      const L = parseFloat(document.getElementById('beamLength').value);
+      const st = document.getElementById('supportConfig').value;
+      const aPos = parseFloat(document.getElementById('aPosInput').value);
+      const bPos = parseFloat(document.getElementById('bPosInput').value);
+      const { pointLoads, udls, uvls } = readLoads();
+
+      let result;
+      try {
+        result = calculateBeamComplete(L, pointLoads, udls, uvls, st, aPos, bPos, 1500);
+      } catch(e) {
+        errBox.innerHTML = `<div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-300 rounded-xl p-4 text-sm">${e.message.replace(/\n/g,'<br/>')}</div>`;
+        return;
+      }
+
+      const { x, sf, bm, reactions } = result;
+      const cps = findContraflexure(x, bm);
+      const f = (n) => parseFloat(n.toFixed(3)).toString();
+
+      // Reactions
+      let reactHTML = '<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">';
+      for (const [k, v] of Object.entries(reactions)) {
+        const color = k.includes('Roller') ? 'green' : k.includes('Hinge') ? 'blue' : k.includes('Fixed') && !k.includes('moment') ? 'blue' : 'orange';
+        reactHTML += `<div class="bg-${color}-50 dark:bg-${color}-900/20 rounded-xl p-3 border border-${color}-200 dark:border-${color}-700">
+          <p class="text-xs text-slate-500 dark:text-slate-400">${k}</p>
+          <p class="text-lg font-bold font-mono text-${color}-700 dark:text-${color}-400">${f(v)} <span class="text-xs font-normal">${k.includes('moment') ? 'kN·m' : 'kN'}</span></p>
+        </div>`;
+      }
+      reactHTML += '</div>';
+
+      const maxSF = Math.max(...sf), minSF = Math.min(...sf);
+      const maxBM = Math.max(...bm), minBM = Math.min(...bm);
+      const xMaxSF = x[sf.indexOf(maxSF)], xMinSF = x[sf.indexOf(minSF)];
+      const xMaxBM = x[bm.indexOf(maxBM)], xMinBM = x[bm.indexOf(minBM)];
+
+      reactHTML += `<div class="mt-4 grid grid-cols-2 gap-3">
+        <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-3"><p class="text-xs text-slate-500">Max SF</p><p class="font-bold font-mono text-blue-700 dark:text-blue-400">${f(maxSF)} kN <span class="text-xs font-normal">@ x=${f(xMaxSF)}m</span></p></div>
+        <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-3"><p class="text-xs text-slate-500">Min SF</p><p class="font-bold font-mono text-blue-700 dark:text-blue-400">${f(minSF)} kN <span class="text-xs font-normal">@ x=${f(xMinSF)}m</span></p></div>
+        <div class="bg-red-50 dark:bg-red-900/20 rounded-xl p-3"><p class="text-xs text-slate-500">Max BM</p><p class="font-bold font-mono text-red-700 dark:text-red-400">${f(maxBM)} kN·m <span class="text-xs font-normal">@ x=${f(xMaxBM)}m</span></p></div>
+        <div class="bg-red-50 dark:bg-red-900/20 rounded-xl p-3"><p class="text-xs text-slate-500">Min BM</p><p class="font-bold font-mono text-red-700 dark:text-red-400">${f(minBM)} kN·m <span class="text-xs font-normal">@ x=${f(xMinBM)}m</span></p></div>
+      </div>`;
+
+      if (cps.length > 0) {
+        reactHTML += `<div class="mt-3 bg-green-50 dark:bg-green-900/20 rounded-xl p-3 border border-green-200 dark:border-green-700">
+          <p class="text-xs text-slate-500 mb-1">Points of Contraflexure</p>
+          <p class="font-bold font-mono text-green-700 dark:text-green-400">${cps.map(c => `x = ${f(c)} m`).join('  |  ')}</p>
+        </div>`;
+      } else {
+        reactHTML += `<p class="mt-3 text-sm text-slate-400">No points of contraflexure.</p>`;
+      }
+
+      document.getElementById('reactionsDisplay').innerHTML = reactHTML;
+
+      // Draw plots
+      const isDark = html.classList.contains('dark');
+      const plotBg = isDark ? '#0f172a' : '#ffffff';
+      const gridColor = isDark ? '#334155' : '#e2e8f0';
+      const textColor = isDark ? '#94a3b8' : '#475569';
+
+      const baseLayout = {
+        paper_bgcolor: plotBg, plot_bgcolor: plotBg,
+        font: { family: 'Inter, sans-serif', color: textColor, size: 11 },
+        margin: { t: 20, b: 45, l: 55, r: 20 },
+        xaxis: { gridcolor: gridColor, zeroline: true, zerolinecolor: isDark?'#475569':'#94a3b8', title: 'x (m)' },
+      };
+
+      // Beam illustration using Plotly shapes
+      drawBeamIllustration(L, st, aPos, bPos, pointLoads, udls, uvls, isDark, plotBg, textColor, gridColor);
+
+      // SFD
+      const sfdAnnotations = [
+        { x: xMaxSF, y: maxSF, text: `<b>${f(maxSF)}</b>`, xref:'x', yref:'y', showarrow:true, arrowhead:2, arrowsize:1, arrowcolor:'#2563eb', font:{color:'#2563eb', size:11}, bgcolor: isDark?'#1e3a5f':'#eff6ff', bordercolor:'#2563eb' },
+        { x: xMinSF, y: minSF, text: `<b>${f(minSF)}</b>`, xref:'x', yref:'y', showarrow:true, arrowhead:2, arrowsize:1, arrowcolor:'#2563eb', font:{color:'#2563eb', size:11}, bgcolor: isDark?'#1e3a5f':'#eff6ff', bordercolor:'#2563eb' },
+      ];
+      Plotly.react('sfdPlot', [
+        { type:'scatter', mode:'lines', x, y: sf, fill:'tozeroy', fillcolor: isDark?'rgba(59,130,246,0.15)':'rgba(37,99,235,0.1)', line:{color:'#2563eb', width:2}, name:'SFD' },
+      ], { ...baseLayout, yaxis:{...baseLayout.xaxis, title:'Shear Force (kN)'}, annotations: sfdAnnotations, showlegend:false }, {responsive:true});
+
+      // BMD with contraflexure markers
+      const bmAnnotations = [
+        { x: xMaxBM, y: maxBM, text: `<b>${f(maxBM)}</b>`, xref:'x', yref:'y', showarrow:true, arrowhead:2, arrowsize:1, arrowcolor:'#dc2626', font:{color:'#dc2626', size:11}, bgcolor: isDark?'#3b1515':'#fef2f2', bordercolor:'#dc2626' },
+        { x: xMinBM, y: minBM, text: `<b>${f(minBM)}</b>`, xref:'x', yref:'y', showarrow:true, arrowhead:2, arrowsize:1, arrowcolor:'#dc2626', font:{color:'#dc2626', size:11}, bgcolor: isDark?'#3b1515':'#fef2f2', bordercolor:'#dc2626' },
+        ...cps.map(cp => ({ x: cp, y: 0, text: `<b>PC<br/>${f(cp)}m</b>`, xref:'x', yref:'y', showarrow:true, arrowhead:2, ax:0, ay:-30, arrowcolor:'#16a34a', font:{color:'#16a34a', size:10}, bgcolor: isDark?'#14532d':'#f0fdf4', bordercolor:'#16a34a' })),
+      ];
+      const bmTraces = [
+        { type:'scatter', mode:'lines', x, y: bm, fill:'tozeroy', fillcolor: isDark?'rgba(220,38,38,0.15)':'rgba(220,38,38,0.1)', line:{color:'#dc2626', width:2}, name:'BMD' },
+      ];
+      if (cps.length > 0) {
+        bmTraces.push({ type:'scatter', mode:'markers', x: cps, y: cps.map(()=>0), marker:{size:10, color:'#16a34a', symbol:'circle'}, name:'Contraflexure' });
+      }
+      Plotly.react('bmdPlot', bmTraces, { ...baseLayout, yaxis:{...baseLayout.xaxis, title:'Bending Moment (kN·m)'}, annotations: bmAnnotations, legend:{bgcolor: isDark?'#1e293b':'#f8fafc', borderwidth:1} }, {responsive:true});
+    }
+
+    function drawBeamIllustration(L, st, aPos, bPos, pLoads, udls, uvls, isDark, plotBg, textColor, gridColor) {
+      const shapes = [
+        // Beam rectangle
+        { type:'rect', x0:0, y0:-0.1, x1:L, y1:0.1, fillcolor: isDark?'#475569':'#94a3b8', line:{color:'black', width:1} },
+      ];
+      const annotations = [];
+      const traces = [{ type:'scatter', mode:'lines', x:[0,L], y:[0,0], line:{color:'transparent'}, showlegend:false, hoverinfo:'skip' }];
+
+      // Supports
+      if (st === '1') {
+        annotations.push({ x:0, y:-0.35, text:'△', font:{size:20, color:textColor}, showarrow:false });
+        annotations.push({ x:L, y:-0.35, text:'○', font:{size:18, color:textColor}, showarrow:false });
+      } else if (st === '2') {
+        shapes.push({ type:'rect', x0:-0.15, y0:-0.5, x1:0, y1:0.5, fillcolor:textColor, line:{color:textColor} });
+      } else if (st === '3') {
+        shapes.push({ type:'rect', x0:-0.15, y0:-0.5, x1:0, y1:0.5, fillcolor:textColor, line:{color:textColor} });
+        annotations.push({ x:L, y:-0.35, text:'○', font:{size:18, color:textColor}, showarrow:false });
+      } else if (st === '4') {
+        annotations.push({ x:aPos, y:-0.35, text:'△', font:{size:20, color:textColor}, showarrow:false });
+        annotations.push({ x:bPos, y:-0.35, text:'○', font:{size:18, color:textColor}, showarrow:false });
+      }
+
+      // Point loads — arrowhead at beam surface, tail above (Plotly: head at (x,y), tail at (ax,ay))
+      for (const [P, a] of pLoads) {
+        const dir = P >= 0 ? 1 : -1;   // +1 = downward load
+        const headY  = dir * 0.12;     // arrowhead touches beam ← FIXED
+        const tailY  = dir * 1.5;      // tail is away from beam ← FIXED
+        const labelY = dir * 1.72;
+        annotations.push({
+          x: a,  y: headY,
+          ax: a, ay: tailY,
+          xref:'x', yref:'y', axref:'x', ayref:'y',
+          showarrow:true, arrowhead:3, arrowsize:1.5, arrowcolor:'#ef4444', arrowwidth:2.5
+        });
+        annotations.push({ x:a, y:labelY, text:`<b>${Math.abs(P)} kN</b>`, font:{color:'#ef4444', size:11}, showarrow:false });
+      }
+
+      // UDL — block + arrows pointing toward beam
+      for (const [w, l1, l2] of udls) {
+        const dir = w >= 0 ? 1 : -1;
+        const blockBase = dir * 0.12;
+        const blockTop  = dir * 0.65;
+        shapes.push({ type:'rect', x0:l1, y0:Math.min(blockBase,blockTop), x1:l2, y1:Math.max(blockBase,blockTop), fillcolor:'rgba(37,99,235,0.18)', line:{color:'#2563eb', width:1.5} });
+        const nArrows = Math.max(3, Math.round((l2-l1) / Math.max(L/8, 0.5)));
+        for (let k = 0; k < nArrows; k++) {
+          const xa = l1 + (l2-l1) * (k + 0.5) / nArrows;
+          annotations.push({
+            x: xa,  y: blockBase,   // HEAD at beam ← FIXED
+            ax: xa, ay: blockTop,   // TAIL at top of block ← FIXED
+            xref:'x', yref:'y', axref:'x', ayref:'y',
+            showarrow:true, arrowhead:2, arrowsize:1.2, arrowcolor:'#2563eb', arrowwidth:1.8
+          });
+        }
+        annotations.push({ x:(l1+l2)/2, y:dir*(Math.abs(blockTop)+0.18), text:`<b>${Math.abs(w)} kN/m</b>`, font:{color:'#2563eb', size:10}, showarrow:false });
+      }
+
+      // UVL (trapezoidal) — polygon + arrows pointing toward beam
+      for (const [w1, w2, l1, l2] of uvls) {
+        const dir = (w1+w2) >= 0 ? 1 : -1;
+        const sc = 0.5 / Math.max(Math.abs(w1), Math.abs(w2), 0.001);
+        const y1h = dir * Math.abs(w1) * sc + dir*0.12;
+        const y2h = dir * Math.abs(w2) * sc + dir*0.12;
+        traces.push({ type:'scatter', mode:'lines', fill:'tozeroy',
+          x:[l1, l2, l2, l1, l1],
+          y:[dir*0.12, dir*0.12, y2h, y1h, dir*0.12],
+          fillcolor:'rgba(22,163,74,0.2)', line:{color:'#16a34a', width:1.5}, showlegend:false, hoverinfo:'skip' });
+        const nA = Math.max(3, Math.round((l2-l1) / Math.max(L/8, 0.5)));
+        for (let k = 0; k < nA; k++) {
+          const t  = (k + 0.5) / nA;
+          const xa = l1 + (l2-l1)*t;
+          const wk = Math.abs(w1) + (Math.abs(w2)-Math.abs(w1))*t;
+          const tailY = dir*wk*sc + dir*0.12;
+          annotations.push({
+            x: xa,  y: dir*0.12,   // HEAD at beam ← FIXED
+            ax: xa, ay: tailY,      // TAIL at load height ← FIXED
+            xref:'x', yref:'y', axref:'x', ayref:'y',
+            showarrow:true, arrowhead:2, arrowsize:1.1, arrowcolor:'#16a34a', arrowwidth:1.8
+          });
+        }
+        annotations.push({ x:l1, y:y1h + dir*0.18, text:`${Math.abs(w1)}kN/m`, font:{color:'#16a34a', size:9}, showarrow:false });
+        annotations.push({ x:l2, y:y2h + dir*0.18, text:`${Math.abs(w2)}kN/m`, font:{color:'#16a34a', size:9}, showarrow:false });
+      }
+
+      Plotly.react('beamIllustration', traces, {
+        paper_bgcolor:plotBg, plot_bgcolor:plotBg,
+        font:{family:'Inter, sans-serif', color:textColor},
+        xaxis:{range:[-0.5, L+0.5], zeroline:false, showgrid:false, title:'x (m)', tickfont:{size:10}},
+        yaxis:{range:[-1.8, 2.2], showgrid:false, zeroline:false, showticklabels:false},
+        shapes, annotations, margin:{t:10, b:35, l:20, r:20}, showlegend:false,
+      }, {responsive:true});
+    }
+
+    // Analyze on button click
+    document.getElementById('btnAnalyze').addEventListener('click', analyze);
+
+    // Also auto-analyze on input changes (debounced)
+    let debTimer;
+    function debouncedAnalyze() { clearTimeout(debTimer); debTimer = setTimeout(analyze, 400); }
+    document.getElementById('beamLength').addEventListener('input', debouncedAnalyze);
+    document.getElementById('supportConfig').addEventListener('change', debouncedAnalyze);
+    document.getElementById('aPosInput').addEventListener('input', debouncedAnalyze);
+    document.getElementById('bPosInput').addEventListener('input', debouncedAnalyze);
+
+    // Reset
+    document.getElementById('btnReset').addEventListener('click', () => {
+      clearAllLoads();
+      document.getElementById('supportConfig').value = '1';
+      document.getElementById('beamLength').value = 10;
+      document.getElementById('reactionsDisplay').innerHTML = '<p class="text-slate-500 text-sm">Run analysis to see results.</p>';
+      document.getElementById('errorBox').innerHTML = '';
+      ['beamIllustration','sfdPlot','bmdPlot'].forEach(id => Plotly.purge(id));
+    });
+
+    // Download
+    document.getElementById('btnDownload').addEventListener('click', () => {
+      try {
+        const L = parseFloat(document.getElementById('beamLength').value);
+        const st = document.getElementById('supportConfig').value;
+        const { pointLoads, udls, uvls } = readLoads();
+        const aPos = parseFloat(document.getElementById('aPosInput').value);
+        const bPos = parseFloat(document.getElementById('bPosInput').value);
+        const { x, sf, bm, reactions } = calculateBeamComplete(L, pointLoads, udls, uvls, st, aPos, bPos, 500);
+        const cps = findContraflexure(x, bm);
+        const csvRows = [['x(m)','SF(kN)','BM(kNm)'], ...x.map((xi,i) => [xi.toFixed(4), sf[i].toFixed(4), bm[i].toFixed(4)])];
+        const csv = csvRows.map(r=>r.join(',')).join('\n');
+        const blob = new Blob([csv], {type:'text/csv'});
+        const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href=url; a.download='beam_results.csv'; a.click(); URL.revokeObjectURL(url);
+        setTimeout(() => Plotly.downloadImage('bmdPlot', {format:'png', filename:'beam_bmd', width:1400, height:600}), 300);
+      } catch(e) { console.error(e); }
+    });
+
+    // Init with example 1
+    loadExample(1);
+  </script>
+</body>
+</html>
