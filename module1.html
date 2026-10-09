@@ -283,7 +283,7 @@
       document.getElementById('res_moment').textContent = f(result.sumM, 2) + ' N·m';
 
       // Build Plotly traces
-      const isDark = html.classList.contains('dark');
+      const isDark = false;
       const plotBg = isDark ? '#0f172a' : '#ffffff';
       const gridColor = isDark ? '#334155' : '#e2e8f0';
       const textColor = isDark ? '#94a3b8' : '#475569';
@@ -381,7 +381,6 @@
     // ── Reset ─────────────────────────────────────────────────────────────────
     document.getElementById('btnReset').addEventListener('click', () => {
       numInput.value = 3;
-      numSlider.value = 3;
       buildForceRows(3);
     });
 
