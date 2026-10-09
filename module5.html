@@ -208,7 +208,7 @@
   </footer>
 
   <script type="module">
-    import { analyzeRectangular, analyzeCircular, analyzeIBeam } from './src/lib/crossSectionAnalyzer.js';
+    import { analyzeRectangular, analyzeCircular, analyzeIBeam } from './crossSectionAnalyzer.js'
 
     const html = document.documentElement;
     if (localStorage.theme === 'dark' || (!('theme' in localStorage) && matchMedia('(prefers-color-scheme: dark)').matches)) html.classList.add('dark');
