@@ -207,7 +207,7 @@
   </footer>
 
   <script type="module">
-    import { analyzeTorsion, validateShearModulus, MATERIAL_PRESETS } from './src/lib/torsionAnalyzer.js';
+    import { analyzeTorsion, validateShearModulus, MATERIAL_PRESETS } from './torsionAnalyzer.js'
 
     const html = document.documentElement;
     if (localStorage.theme === 'dark' || (!('theme' in localStorage) && matchMedia('(prefers-color-scheme: dark)').matches)) html.classList.add('dark');
